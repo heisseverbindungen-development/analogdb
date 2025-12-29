@@ -1,21 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { Film, Home, Camera, Menu, LogOut } from "lucide-react";
+import { Film, Home, Camera, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { toast } from "sonner";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-    toast.success("Erfolgreich abgemeldet");
-  };
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: Home },
@@ -60,24 +52,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border mt-auto space-y-2">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
-          onClick={handleLogout}
-          data-testid="button-logout"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Abmelden
-        </Button>
+      <div className="p-4 border-t border-sidebar-border mt-auto">
         <div className="bg-card/50 p-3 rounded-md border border-sidebar-border">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold font-heading">
-              AF
+              JD
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-medium truncate">Film Enthusiast</p>
-              <p className="text-[10px] text-muted-foreground truncate">Geschützt</p>
+              <p className="text-xs font-medium truncate">John Doe</p>
+              <p className="text-[10px] text-muted-foreground truncate">john@example.com</p>
             </div>
           </div>
         </div>

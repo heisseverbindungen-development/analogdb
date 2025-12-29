@@ -7,30 +7,14 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Inventory from "@/pages/inventory";
 import Cameras from "@/pages/cameras";
-import Login from "@/pages/login";
 import { FilmProvider } from "@/lib/film-context";
-import { AuthProvider } from "@/lib/auth-context";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/">
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/inventory">
-        <ProtectedRoute>
-          <Inventory />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/cameras">
-        <ProtectedRoute>
-          <Cameras />
-        </ProtectedRoute>
-      </Route>
+      <Route path="/" component={Dashboard} />
+      <Route path="/inventory" component={Inventory} />
+      <Route path="/cameras" component={Cameras} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -39,14 +23,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <FilmProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </FilmProvider>
-      </AuthProvider>
+      <FilmProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </FilmProvider>
     </QueryClientProvider>
   );
 }
