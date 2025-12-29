@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+.env
+.env.*
+.replit
+replit.nix
+.upm
+.cache
+*.log
+npm-debug.log*
+.vscode
+attached_assets
