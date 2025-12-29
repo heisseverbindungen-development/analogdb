@@ -8,6 +8,7 @@ interface FilmContextType {
   addRoll: (roll: Omit<FilmRoll, "id">) => void;
   updateRoll: (id: string, updates: Partial<FilmRoll>) => void;
   deleteRoll: (id: string) => void;
+  useRoll: (id: string) => void;
 }
 
 const FilmContext = createContext<FilmContextType | undefined>(undefined);
@@ -30,6 +31,17 @@ export function FilmProvider({ children }: { children: ReactNode }) {
     setRolls((prev) => prev.filter((roll) => roll.id !== id));
   };
 
+  const useRoll = (id: string) => {
+    setRolls((prev) => 
+      prev.map((roll) => {
+        if (roll.id === id && roll.quantity > 0) {
+          return { ...roll, quantity: roll.quantity - 1 };
+        }
+        return roll;
+      })
+    );
+  };
+
   return (
     <FilmContext.Provider
       value={{
@@ -37,6 +49,7 @@ export function FilmProvider({ children }: { children: ReactNode }) {
         addRoll,
         updateRoll,
         deleteRoll,
+        useRoll,
       }}
     >
       {children}
