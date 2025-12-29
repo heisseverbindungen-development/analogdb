@@ -105,88 +105,68 @@ export default function Dashboard() {
              </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           {/* Chart */}
-           <section className="lg:col-span-2 bg-card border border-border rounded-lg p-6 shadow-sm">
-            <div className="mb-6">
-              <h3 className="text-xl font-heading font-semibold">Inventory by Manufacturer</h3>
-              <p className="text-sm text-muted-foreground">Total quantity of rolls per brand.</p>
-            </div>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="hsl(var(--muted-foreground))" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
-                    contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', color: 'hsl(var(--popover-foreground))' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getBarColor(entry.name)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
+        {/* Chart */}
+        <section className="bg-card border border-border rounded-lg p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-xl font-heading font-semibold">Inventory by Manufacturer</h3>
+            <p className="text-sm text-muted-foreground">Total quantity of rolls per brand.</p>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis 
+                  dataKey="name" 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <Tooltip 
+                  cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', color: 'hsl(var(--popover-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={getBarColor(entry.name)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
 
-          {/* Recent Additions */}
-          <section className="lg:col-span-1">
-             <div className="mb-4 flex items-center justify-between">
-               <h3 className="text-xl font-heading font-semibold flex items-center gap-2">
-                 <CheckCircle2 className="w-5 h-5 text-muted-foreground" />
-                 Recently Added
-               </h3>
-               <Link href="/inventory">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs">
-                    View All
-                  </Button>
-               </Link>
-             </div>
-             <Card className="h-[380px]">
-               <ScrollArea className="h-full">
-                 <div className="p-4 space-y-4">
-                     {recentRolls.map(roll => (
-                       <div key={roll.id} className="border-b border-border pb-3 last:border-0 last:pb-0 flex gap-3">
-                         {roll.image_url ? (
-                           <div className="w-10 h-10 rounded bg-muted flex-shrink-0 overflow-hidden">
-                             <img src={roll.image_url} className="w-full h-full object-cover opacity-80" />
-                           </div>
-                         ) : (
-                            <div className="w-10 h-10 rounded bg-muted flex-shrink-0 flex items-center justify-center text-xs font-mono font-bold text-muted-foreground">
-                              {roll.quantity}x
-                            </div>
-                         )}
-                         <div>
-                           <p className="font-medium text-sm">{roll.name}</p>
-                           <div className="flex gap-2 text-[10px] text-muted-foreground mt-0.5">
-                             <span>{roll.manufacturer}</span>
-                             <span>•</span>
-                             <span>{roll.film_size}</span>
-                             <span>•</span>
-                             <span>ISO {roll.iso_recommended}</span>
-                           </div>
-                         </div>
-                       </div>
-                     ))}
-                 </div>
-               </ScrollArea>
-             </Card>
-          </section>
-        </div>
+        {/* Recent Activity */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+             <h3 className="text-xl font-heading font-semibold flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-muted-foreground rounded-full inline-block"></span>
+              Recent Additions
+            </h3>
+            <Link href="/inventory">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                View All
+              </Button>
+            </Link>
+          </div>
+          
+          <ScrollArea className="w-full whitespace-nowrap pb-4">
+            <div className="flex space-x-4">
+              {recentRolls.map(roll => (
+                <div key={roll.id} className="w-[280px] shrink-0">
+                  <FilmRollCard roll={roll} />
+                </div>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </section>
 
       </div>
     </Layout>
