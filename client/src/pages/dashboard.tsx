@@ -1,15 +1,30 @@
 import Layout from "@/components/Layout";
 import FilmRollCard from "@/components/FilmRollCard";
 import { useFilm } from "@/lib/film-context";
-import { Film, AlertTriangle, Layers } from "lucide-react";
+import { Film, AlertTriangle, Layers, Search, Camera } from "lucide-react";
 import { isPast, parseISO } from "date-fns";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useState } from "react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
-  const { rolls } = useFilm();
+  const { rolls, useRoll } = useFilm();
+  const [openCombobox, setOpenCombobox] = useState(false);
 
   // Stats
   const totalRolls = rolls.reduce((acc, roll) => acc + roll.quantity, 0);
@@ -43,6 +58,15 @@ export default function Dashboard() {
     }
   };
 
+  const handleQuickUse = (id: string, name: string) => {
+    useRoll(id);
+    toast.success(`Loaded 1x ${name} into camera`, {
+      description: "Inventory count updated.",
+      icon: <Camera className="w-4 h-4 text-primary" />,
+    });
+    setOpenCombobox(false);
+  };
+
   return (
     <Layout>
       <div className="p-8 space-y-10 max-w-7xl mx-auto">
@@ -54,8 +78,77 @@ export default function Dashboard() {
                <h2 className="text-3xl font-heading font-bold text-foreground">Dashboard</h2>
                <p className="text-muted-foreground mt-1">Overview of your analog archives.</p>
              </div>
-             <div className="flex gap-4">
-               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px]">
+             
+             {/* Quick Actions */}
+             <div className="flex flex-col items-end gap-2">
+                <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      role="combobox" 
+                      aria-expanded={openCombobox}
+                      className="w-[280px] justify-between text-muted-foreground hover:text-foreground border-dashed border-2 hover:border-primary/50"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Camera className="w-4 h-4" />
+                        Quick Load Camera...
+                      </span>
+                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[280px] p-0" align="end">
+                    <Command>
+                      <CommandInput placeholder="Search inventory..." />
+                      <CommandList>
+                        <CommandEmpty>No film found.</CommandEmpty>
+                        <CommandGroup heading="Available Stock">
+                          {rolls
+                            .filter(r => r.quantity > 0)
+                            .map((roll) => (
+                              <CommandItem
+                                key={roll.id}
+                                onSelect={() => handleQuickUse(roll.id, roll.name)}
+                                className="cursor-pointer"
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{roll.name}</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase">{roll.manufacturer} • {roll.film_size}</span>
+                                  </div>
+                                  <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">x{roll.quantity}</span>
+                                </div>
+                              </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        {rolls.filter(r => r.quantity === 0).length > 0 && (
+                           <>
+                            <CommandSeparator />
+                            <CommandGroup heading="Out of Stock">
+                               {rolls
+                                .filter(r => r.quantity === 0)
+                                .map((roll) => (
+                                  <CommandItem key={roll.id} disabled className="opacity-50">
+                                     <div className="flex items-center justify-between w-full">
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">{roll.name}</span>
+                                        <span className="text-[10px] text-muted-foreground uppercase">{roll.manufacturer} • {roll.film_size}</span>
+                                      </div>
+                                      <span className="text-xs font-mono bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">x0</span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                           </>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+             </div>
+          </div>
+          
+          <div className="flex gap-4 flex-wrap">
+               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px] flex-1">
                  <div className="p-2 bg-primary/10 rounded-md text-primary">
                    <Film className="w-5 h-5" />
                  </div>
@@ -65,7 +158,7 @@ export default function Dashboard() {
                  </div>
                </div>
 
-               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px]">
+               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px] flex-1">
                  <div className="p-2 bg-sidebar-accent rounded-md text-foreground">
                    <Layers className="w-5 h-5" />
                  </div>
@@ -75,7 +168,7 @@ export default function Dashboard() {
                  </div>
                </div>
 
-               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px]">
+               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px] flex-1">
                  <div className="p-2 bg-destructive/10 rounded-md text-destructive">
                    <AlertTriangle className="w-5 h-5" />
                  </div>
@@ -85,7 +178,6 @@ export default function Dashboard() {
                  </div>
                </div>
              </div>
-          </div>
         </section>
 
         {/* Chart */}
