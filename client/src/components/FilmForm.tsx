@@ -23,7 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Upload, X } from "lucide-react";
 import rollImage from "@assets/generated_images/generic_film_roll_canister_35mm.png";
 
 const formSchema = z.object({
@@ -47,6 +48,10 @@ interface FilmFormProps {
 }
 
 export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: FilmFormProps) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -78,6 +83,7 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
           notes: initialData.notes || "",
           quantity: initialData.quantity.toString(),
         });
+        setImageUrl(initialData.image_url || null);
       } else {
         form.reset({
           name: "",
@@ -91,9 +97,48 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
           notes: "",
           quantity: "1",
         });
+        setImageUrl(null);
       }
     }
   }, [initialData, form, open]);
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const response = await fetch("/api/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: file.name,
+          size: file.size,
+          contentType: file.type,
+        }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to get upload URL");
+      
+      const { uploadURL, objectPath } = await response.json();
+      
+      await fetch(uploadURL, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+      
+      setImageUrl(objectPath);
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     const formattedData = {
@@ -102,7 +147,7 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
       iso_recommended: parseInt(values.iso_recommended, 10),
       iso_custom: values.iso_custom ? parseInt(values.iso_custom, 10) : null,
       quantity: parseInt(values.quantity, 10) || 1,
-      image_url: initialData?.image_url || rollImage,
+      image_url: imageUrl || rollImage,
       notes: values.notes || null,
     };
     onSubmit(formattedData);
@@ -126,6 +171,54 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mt-6">
             
+            <div className="space-y-2">
+              <FormLabel>Film Image</FormLabel>
+              <div className="flex items-center gap-4">
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border bg-muted">
+                  <img 
+                    src={imageUrl || rollImage} 
+                    alt="Film preview" 
+                    className="w-full h-full object-cover"
+                    data-testid="img-film-preview"
+                  />
+                  {imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl(null)}
+                      className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                      data-testid="button-remove-image"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                    data-testid="input-file-upload"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full"
+                    data-testid="button-upload-image"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {isUploading ? "Uploading..." : "Upload Image"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optional. JPG, PNG up to 10MB
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <FormField
               control={form.control}
               name="name"
