@@ -3,13 +3,17 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertFilmRollSchema, insertFilmLogSchema } from "@shared/schema";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { registerLocalUploadRoutes } from "./local-uploads";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Register object storage routes for file uploads
+  // Register object storage routes for file uploads (Replit)
   registerObjectStorageRoutes(app);
+  
+  // Register local upload routes for Docker/self-hosted deployment
+  registerLocalUploadRoutes(app);
 
   // Film Rolls
   app.get("/api/film-rolls", async (req, res) => {

@@ -106,26 +106,17 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      const response = await fetch("/api/uploads/request-url", {
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const response = await fetch("/api/local-uploads", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: file.name,
-          size: file.size,
-          contentType: file.type,
-        }),
+        body: formData,
       });
       
-      if (!response.ok) throw new Error("Failed to get upload URL");
+      if (!response.ok) throw new Error("Failed to upload file");
       
-      const { uploadURL, objectPath } = await response.json();
-      
-      await fetch(uploadURL, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
-      });
-      
+      const { objectPath } = await response.json();
       setImageUrl(objectPath);
     } catch (error) {
       console.error("Upload failed:", error);
