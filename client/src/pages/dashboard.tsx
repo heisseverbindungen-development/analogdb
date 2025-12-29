@@ -49,7 +49,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-10 max-w-7xl mx-auto">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-10 max-w-7xl mx-auto">
         
         {/* Header & Stats */}
         <section className="space-y-6">

@@ -54,7 +54,7 @@ export default function Inventory() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-8 max-w-7xl mx-auto h-full flex flex-col">
+      <div className="p-4 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto h-full flex flex-col">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
