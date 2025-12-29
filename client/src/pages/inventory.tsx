@@ -5,7 +5,7 @@ import { useFilm } from "@/lib/film-context";
 import { FilmRoll } from "@/shared/types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, Search } from "lucide-react";
+import { Plus, Filter, Search, Film } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -25,11 +25,11 @@ export default function Inventory() {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     if (editingRoll) {
-      updateRoll(editingRoll.id, data);
+      await updateRoll(editingRoll.id, data);
     } else {
-      addRoll(data);
+      await addRoll(data);
     }
     setEditingRoll(null);
   };
