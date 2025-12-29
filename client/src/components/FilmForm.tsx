@@ -26,7 +26,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFo
 import { useEffect } from "react";
 import rollImage from "@assets/generated_images/generic_film_roll_canister_35mm.png";
 
-// Schema handles form state (strings mostly)
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name is required" }),
   manufacturer: z.string().min(1, { message: "Manufacturer is required" }),
@@ -37,6 +36,7 @@ const formSchema = z.object({
   iso_recommended: z.string(),
   iso_custom: z.string().optional(),
   notes: z.string().optional(),
+  quantity: z.string().default("1"),
 });
 
 interface FilmFormProps {
@@ -59,6 +59,7 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
       iso_recommended: "400",
       iso_custom: "",
       notes: "",
+      quantity: "1",
     },
   });
 
@@ -75,6 +76,7 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
           iso_recommended: initialData.iso_recommended.toString(),
           iso_custom: initialData.iso_custom ? initialData.iso_custom.toString() : "",
           notes: initialData.notes || "",
+          quantity: initialData.quantity.toString(),
         });
       } else {
         form.reset({
@@ -87,6 +89,7 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
           iso_recommended: "400",
           iso_custom: "",
           notes: "",
+          quantity: "1",
         });
       }
     }
@@ -98,9 +101,9 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
       expiry_date: values.expiry_unknown ? null : (values.expiry_date || null),
       iso_recommended: parseInt(values.iso_recommended, 10),
       iso_custom: values.iso_custom ? parseInt(values.iso_custom, 10) : null,
+      quantity: parseInt(values.quantity, 10) || 1,
       image_url: initialData?.image_url || rollImage,
-      bundle_id: initialData?.bundle_id || null,
-      notes: values.notes || null, // Ensure empty string becomes null if preferred, or keep as string
+      notes: values.notes || null,
     };
     onSubmit(formattedData);
     onOpenChange(false);
@@ -305,6 +308,25 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
                 )}
               />
             </div>
+            
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="e.g. 1" 
+                      min="1"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

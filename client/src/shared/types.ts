@@ -13,12 +13,5 @@ export interface FilmRoll {
   iso_custom: number | null;
   notes: string | null;
   image_url: string | null;
-  bundle_id: string | null;
-}
-
-export interface Bundle {
-  id: string;
-  name: string;
-  image_url: string | null;
-  film_rolls: string[]; // Array of FilmRoll IDs
+  quantity: number;
 }

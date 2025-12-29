@@ -1,29 +1,5 @@
-import { FilmRoll, Bundle } from "../shared/types";
-import kodakImage from "@assets/generated_images/kodak_portra_film_bundle_box.png";
-import fujiImage from "@assets/generated_images/fujifilm_superia_film_bundle_box.png";
-import ilfordImage from "@assets/generated_images/ilford_hp5_plus_film_bundle_box.png";
+import { FilmRoll } from "../shared/types";
 import rollImage from "@assets/generated_images/generic_film_roll_canister_35mm.png";
-
-export const INITIAL_BUNDLES: Bundle[] = [
-  {
-    id: "bundle_kodak_1",
-    name: "Kodak Portra Professional Pack",
-    image_url: kodakImage,
-    film_rolls: ["roll_k1", "roll_k2", "roll_k3"],
-  },
-  {
-    id: "bundle_fuji_1",
-    name: "Fujifilm Superia Everyday Kit",
-    image_url: fujiImage,
-    film_rolls: ["roll_f1", "roll_f2", "roll_f3"],
-  },
-  {
-    id: "bundle_ilford_1",
-    name: "Ilford HP5 Black & White Kit",
-    image_url: ilfordImage,
-    film_rolls: ["roll_i1", "roll_i2"],
-  },
-];
 
 export const INITIAL_ROLLS: FilmRoll[] = [
   {
@@ -37,7 +13,7 @@ export const INITIAL_ROLLS: FilmRoll[] = [
     iso_custom: null,
     notes: "Best for skin tones, warm daylight.",
     image_url: rollImage,
-    bundle_id: "bundle_kodak_1",
+    quantity: 5,
   },
   {
     id: "roll_k2",
@@ -50,7 +26,7 @@ export const INITIAL_ROLLS: FilmRoll[] = [
     iso_custom: 320,
     notes: "Shoot at 320 for better shadows.",
     image_url: rollImage,
-    bundle_id: "bundle_kodak_1",
+    quantity: 2,
   },
   {
     id: "roll_k3",
@@ -63,7 +39,7 @@ export const INITIAL_ROLLS: FilmRoll[] = [
     iso_custom: null,
     notes: "Low light situations.",
     image_url: rollImage,
-    bundle_id: "bundle_kodak_1",
+    quantity: 3,
   },
   {
     id: "roll_f1",
@@ -76,33 +52,7 @@ export const INITIAL_ROLLS: FilmRoll[] = [
     iso_custom: null,
     notes: "Found in attic, expiry unknown.",
     image_url: rollImage,
-    bundle_id: "bundle_fuji_1",
-  },
-  {
-    id: "roll_f2",
-    name: "Fujifilm Superia X-TRA 400",
-    manufacturer: "Fujifilm",
-    film_type: "color_negative",
-    film_size: "35mm",
-    expiry_date: "2025-01-15",
-    iso_recommended: 400,
-    iso_custom: null,
-    notes: null,
-    image_url: rollImage,
-    bundle_id: "bundle_fuji_1",
-  },
-  {
-    id: "roll_f3",
-    name: "Fujifilm Superia X-TRA 400",
-    manufacturer: "Fujifilm",
-    film_type: "color_negative",
-    film_size: "35mm",
-    expiry_date: "2025-01-15",
-    iso_recommended: 400,
-    iso_custom: null,
-    notes: null,
-    image_url: rollImage,
-    bundle_id: "bundle_fuji_1",
+    quantity: 1,
   },
   {
     id: "roll_i1",
@@ -115,7 +65,7 @@ export const INITIAL_ROLLS: FilmRoll[] = [
     iso_custom: 800,
     notes: "Push processing to 800 planned.",
     image_url: rollImage,
-    bundle_id: "bundle_ilford_1",
+    quantity: 10,
   },
   {
     id: "roll_i2",
@@ -128,6 +78,19 @@ export const INITIAL_ROLLS: FilmRoll[] = [
     iso_custom: null,
     notes: null,
     image_url: rollImage,
-    bundle_id: "bundle_ilford_1",
+    quantity: 4,
+  },
+  {
+    id: "roll_c1",
+    name: "Cinestill 800T",
+    manufacturer: "Cinestill",
+    film_type: "color_negative",
+    film_size: "35mm",
+    expiry_date: "2026-02-15",
+    iso_recommended: 800,
+    iso_custom: null,
+    notes: "Tungsten balanced.",
+    image_url: rollImage,
+    quantity: 2,
   },
 ];

@@ -1,22 +1,47 @@
 import Layout from "@/components/Layout";
-import BundleCard from "@/components/BundleCard";
 import FilmRollCard from "@/components/FilmRollCard";
 import { useFilm } from "@/lib/film-context";
-import { Film, Archive, AlertTriangle } from "lucide-react";
+import { Film, AlertTriangle, Layers } from "lucide-react";
 import { isPast, parseISO } from "date-fns";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export default function Dashboard() {
-  const { bundles, rolls } = useFilm();
+  const { rolls } = useFilm();
 
   // Stats
-  const totalRolls = rolls.length;
+  const totalRolls = rolls.reduce((acc, roll) => acc + roll.quantity, 0);
   const expiredRolls = rolls.filter(r => r.expiry_date && isPast(parseISO(r.expiry_date))).length;
+  const uniqueStocks = rolls.length;
   
   // Recent rolls (just last 5 added for now)
   const recentRolls = [...rolls].reverse().slice(0, 5);
+
+  // Chart Data
+  const rollsByManufacturer = rolls.reduce((acc, roll) => {
+    acc[roll.manufacturer] = (acc[roll.manufacturer] || 0) + roll.quantity;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const chartData = Object.entries(rollsByManufacturer).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  // Sort by value desc
+  chartData.sort((a, b) => b.value - a.value);
+
+  const getBarColor = (name: string) => {
+     switch (name.toLowerCase()) {
+      case 'kodak': return 'hsl(45, 100%, 50%)'; // Primary
+      case 'fujifilm': return 'hsl(142, 71%, 45%)'; // Greenish
+      case 'ilford': return 'hsl(0, 0%, 80%)'; // White/Grey
+      case 'cinestill': return 'hsl(0, 85%, 60%)'; // Red
+      default: return 'hsl(240, 4%, 40%)'; // Muted
+    }
+  };
 
   return (
     <Layout>
@@ -42,11 +67,11 @@ export default function Dashboard() {
 
                <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px]">
                  <div className="p-2 bg-sidebar-accent rounded-md text-foreground">
-                   <Archive className="w-5 h-5" />
+                   <Layers className="w-5 h-5" />
                  </div>
                  <div>
-                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Bundles</p>
-                   <p className="text-2xl font-mono font-bold">{bundles.length}</p>
+                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Unique Stocks</p>
+                   <p className="text-2xl font-mono font-bold">{uniqueStocks}</p>
                  </div>
                </div>
 
@@ -55,7 +80,7 @@ export default function Dashboard() {
                    <AlertTriangle className="w-5 h-5" />
                  </div>
                  <div>
-                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Expired</p>
+                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Expired Stocks</p>
                    <p className="text-2xl font-mono font-bold">{expiredRolls}</p>
                  </div>
                </div>
@@ -63,18 +88,40 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Bundles */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-heading font-semibold flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-primary rounded-full inline-block"></span>
-              Film Bundles
-            </h3>
+        {/* Chart */}
+        <section className="bg-card border border-border rounded-lg p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-xl font-heading font-semibold">Inventory by Manufacturer</h3>
+            <p className="text-sm text-muted-foreground">Total quantity of rolls per brand.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {bundles.map(bundle => (
-              <BundleCard key={bundle.id} bundle={bundle} />
-            ))}
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis 
+                  dataKey="name" 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <Tooltip 
+                  cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', color: 'hsl(var(--popover-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={getBarColor(entry.name)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </section>
 
