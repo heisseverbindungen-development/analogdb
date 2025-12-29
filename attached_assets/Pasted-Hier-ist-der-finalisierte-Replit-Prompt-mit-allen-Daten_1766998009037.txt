@@ -1,0 +1,80 @@
+Hier ist der **finalisierte Replit-Prompt** mit allen Datentypen, der Option "Unbekannt" für das Ablaufdatum und den vollständigen Anforderungen:
+
+---
+
+### **Replit-Prompt für AnalogFilmDB**
+
+*"Erstelle eine Web-App mit React (Frontend) und Node.js/Express (Backend) für eine Datenbank analoger Filmrollen. Die App soll folgende Funktionen und Datentypen unterstützen:*
+
+---
+
+#### **1. Datenmodell für Filmrollen**
+**Tabelle: `film_rolls`**
+| Feld                     | Datentyp          | Beschreibung                                                                                     | Beispielwerte/Optionen                                                                                     |
+|--------------------------|-------------------|-------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `id`                     | String (UUID)     | Eindeutige ID der Filmrolle                                                                      | `"f47ac10b-58cc-4372-a567-0e02b2c3d479"`                                                                   |
+| `name`                   | String            | Name des Films                                                                                   | `"Kodak Portra 400"`                                                                                         |
+| `manufacturer`           | String            | Hersteller (filterbar)                                                                          | `"Kodak"`, `"Fujifilm"`, `"Ilford"`, `"Agfa"`                                                              |
+| `film_type`              | Enum              | Negativ-Art (filterbar): `"black_white"`, `"color_negative"`, `"color_slide"`                   | `"color_negative"`                                                                                           |
+| `film_size`              | Enum              | Filmgröße (filterbar): `"35mm"`, `"120"`                                                        | `"35mm"`                                                                                                     |
+| `expiry_date`            | Date oder `null`  | Ablaufdatum (kann `"unbekannt"` sein, dann `null` speichern)                                    | `"2025-12-31"` oder `null`                                                                                  |
+| `iso_recommended`        | Enum (Integer)    | Herstellerempfehlung für ISO/ASA (Dropdown)                                                     | `100`, `200`, `400`, `800`, `1600` (volle Liste: 25, 50, 64, 80, 100, 125, 160, 200, 400, 800, 1600, 3200, 6400) |
+| `iso_custom`             | Integer oder `null`| Individuell gewählte ISO (editierbar, optional)                                                 | `400` oder `null`                                                                                            |
+| `notes`                  | String oder `null`| Freies Notizfeld                                                                                 | `"Gut für Porträts, kühl lagern"` oder `null`                                                               |
+| `image_url`              | String oder `null`| URL zum Bild/Thumbnail (z. B. Verpackung)                                                       | `"/uploads/kodak_portra_400.jpg"` oder `null`                                                               |
+| `bundle_id`              | String (UUID)     | Referenz zum Bundle                                                                             | `"bundle_123"`                                                                                               |
+
+---
+
+#### **2. Datenmodell für Bundles**
+**Tabelle: `bundles`**
+| Feld          | Datentyp       | Beschreibung                          | Beispielwerte          |
+|---------------|----------------|----------------------------------------|-------------------------|
+| `id`          | String (UUID)  | Eindeutige ID des Bundles              | `"bundle_123"`          |
+| `name`        | String         | Name des Bundles                       | `"Kodak Portra Bundle"` |
+| `image_url`   | String oder `null` | URL zum Bundle-Bild               | `"/uploads/bundle_kodak.jpg"` |
+| `film_rolls`  | Array[UUID]    | Liste der zugehörigen Filmrollen-IDs  | `["f47ac10b-...", "e567ab12-..."]` |
+
+---
+
+#### **3. Funktionen**
+- **Filmrollen:**
+  - CRUD-Operationen (Erstellen, Lesen, Aktualisieren, Löschen).
+  - **Filterung** nach: Hersteller, Negativ-Art, Filmgröße, ISO (Herstellerempfehlung).
+  - Ablaufdatum kann `null` sein (für "unbekannt").
+
+- **Bundles:**
+  - Übersicht mit Name, Bild, Anzahl der Rollen.
+  - Filteroptionen für die Bundle-Übersicht.
+  - Rollen zu Bundles hinzufügen/bearbeiten.
+
+- **UI:**
+  - Responsive Design mit Tabellenansicht für Bundles (inkl. Filterleiste).
+  - Detailansicht für Filmrollen mit Bearbeitungsformular.
+  - Upload-Funktion für Bilder (Drag & Drop).
+
+---
+
+#### **4. Technische Umsetzung**
+- **Backend:** Node.js/Express mit SQLite-Datenbank.
+- **Frontend:** React mit State-Management (z. B. Context API oder Redux).
+- **Beispieldaten:** 3 Bundles (z. B. Kodak, Fujifilm, Ilford) mit je 2-3 Filmrollen, inkl. aller neuen Felder und Filteroptionen.
+- **API-Endpunkte:**
+  - `GET /api/film-rolls` (mit Filterparametern)
+  - `POST /api/film-rolls`
+  - `GET /api/bundles`
+  - `POST /api/bundles`
+
+---
+
+#### **5. Startdaten**
+Erstelle Beispiel-Daten für:
+- 3 Bundles (z. B. "Kodak Portra", "Fujifilm Superia", "Ilford HP5").
+- Je Bundle 2-3 Filmrollen mit variierenden Werten für Hersteller, Negativ-Art, Filmgröße, ISO und Ablaufdatum (teilweise `null`)."
+
+---
+
+### **Fragen an dich:**
+1. Soll ich dir ein **SQL-Schema** für die Datenbank-Tabellen (`film_rolls` und `bundles`) erstellen?
+2. Brauchst du ein **Beispiel für die API-Endpunkte** (z. B. Request/Response-Struktur)?
+3. Oder möchtest du direkt mit der Implementierung in Replit starten und brauchst Hilfe bei der **Code-Struktur** (z. B. Ordneraufbau, erste Komponenten)?
