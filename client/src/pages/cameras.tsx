@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
 import { useFilm } from "@/lib/film-context";
 import { Camera, Search, CheckCircle2, Clock, History } from "lucide-react";
-import { formatDistanceToNow, parseISO } from "date-fns";
+import { formatDistanceToNow, parseISO, format } from "date-fns";
+import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -200,7 +201,7 @@ export default function Cameras() {
                        </div>
                      ) : (
                        finishedRolls.map(log => (
-                         <div key={log.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                         <div key={log.id} className="border-b border-border pb-4 last:border-0 last:pb-0" data-testid={`log-entry-${log.id}`}>
                            <div className="flex justify-between items-start mb-1">
                              <p className="font-medium text-sm text-foreground">{log.filmName}</p>
                              <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">
@@ -211,10 +212,28 @@ export default function Cameras() {
                              <Camera className="w-3 h-3" />
                              <span className="font-medium text-foreground/80">{log.camera || "Unknown"}</span>
                            </div>
-                           <div className="flex gap-2 text-[10px] text-muted-foreground">
+                           <div className="flex gap-2 text-[10px] text-muted-foreground mb-2">
                               <span className="bg-muted px-1.5 rounded">{log.manufacturer}</span>
                               <span className="bg-muted px-1.5 rounded">{log.film_size}</span>
                               <span className="bg-muted px-1.5 rounded">ISO {log.iso}</span>
+                           </div>
+                           <div className="text-[10px] text-muted-foreground space-y-1">
+                             <div className="flex gap-2">
+                               <span className="font-medium">Geladen:</span>
+                               <span>{format(parseISO(log.dateLoaded), "dd.MM.yyyy", { locale: de })}</span>
+                             </div>
+                             {log.dateFinished && (
+                               <div className="flex gap-2">
+                                 <span className="font-medium">Beendet:</span>
+                                 <span>{format(parseISO(log.dateFinished), "dd.MM.yyyy", { locale: de })}</span>
+                               </div>
+                             )}
+                             {log.notes && (
+                               <div className="flex gap-2">
+                                 <span className="font-medium">Notiz:</span>
+                                 <span className="text-foreground/70 break-words">{log.notes}</span>
+                               </div>
+                             )}
                            </div>
                          </div>
                        ))
