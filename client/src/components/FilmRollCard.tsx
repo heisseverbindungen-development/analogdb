@@ -125,9 +125,14 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant="ghost" 
+                variant="default"
                 size="icon" 
-                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 mr-auto"
+                className={cn(
+                  "h-8 w-8 mr-auto transition-colors",
+                  roll.quantity > 0 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95" 
+                    : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                )}
                 onClick={handleUse}
                 disabled={roll.quantity <= 0}
               >
