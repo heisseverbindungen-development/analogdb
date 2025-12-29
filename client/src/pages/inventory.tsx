@@ -5,11 +5,9 @@ import { useFilm } from "@/lib/film-context";
 import { FilmRoll } from "@/shared/types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, Search, SlidersHorizontal } from "lucide-react";
+import { Plus, Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 
 export default function Inventory() {
   const { rolls, addRoll, updateRoll } = useFilm();

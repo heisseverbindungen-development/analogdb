@@ -1,6 +1,6 @@
 import { FilmRoll } from "@/shared/types";
 import { format, parseISO, isPast } from "date-fns";
-import { Calendar, Droplets, Maximize2, Hash, AlertTriangle, Edit2, Trash2 } from "lucide-react";
+import { Calendar, Droplets, Hash, AlertTriangle, Edit2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,8 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
     switch (m.toLowerCase()) {
       case 'kodak': return 'text-yellow-500';
       case 'fujifilm': return 'text-green-500';
-      case 'ilford': return 'text-orange-500'; // Ilford doesn't have a strong color, but orange works for B&W contrast
+      case 'ilford': return 'text-orange-500'; 
+      case 'cinestill': return 'text-red-400';
       default: return 'text-muted-foreground';
     }
   };
@@ -46,7 +47,7 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            <Film className="w-12 h-12 opacity-20" />
+            <span className="opacity-20 font-bold text-4xl">{roll.quantity}x</span>
           </div>
         )}
         <div className="absolute top-2 right-2 flex gap-1">
@@ -56,6 +57,11 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
           <Badge variant="outline" className={cn("backdrop-blur-md bg-black/50 border-white/10 text-white font-mono text-xs font-bold", getManufacturerColor(roll.manufacturer))}>
             ISO {roll.iso_recommended}
           </Badge>
+        </div>
+        <div className="absolute bottom-2 right-2">
+            <Badge className="bg-primary text-primary-foreground font-mono font-bold">
+               x{roll.quantity}
+            </Badge>
         </div>
       </div>
 

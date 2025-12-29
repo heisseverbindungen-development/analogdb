@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Film, Package, Plus, Home } from "lucide-react";
+import { Film, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             Analog<span className="text-foreground">DB</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-mono uppercase tracking-widest">
-            Film Inventory v1.0
+            Film Inventory v1.1
           </p>
         </div>
 
