@@ -1,77 +1,117 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FilmRoll, FilmLog } from "../shared/types";
-import { INITIAL_ROLLS } from "./mock-data";
-import { v4 as uuidv4 } from "uuid";
+import { filmRollsAPI, filmLogsAPI } from "./api";
 
 interface FilmContextType {
   rolls: FilmRoll[];
   logs: FilmLog[];
-  addRoll: (roll: Omit<FilmRoll, "id">) => void;
-  updateRoll: (id: string, updates: Partial<FilmRoll>) => void;
-  deleteRoll: (id: string) => void;
-  useRoll: (id: string, camera?: string, notes?: string) => void;
-  finishRoll: (logId: string) => void;
+  isLoadingRolls: boolean;
+  isLoadingLogs: boolean;
+  addRoll: (roll: Omit<FilmRoll, "id">) => Promise<void>;
+  updateRoll: (id: string, updates: Partial<FilmRoll>) => Promise<void>;
+  deleteRoll: (id: string) => Promise<void>;
+  useRoll: (id: string, camera?: string, notes?: string) => Promise<void>;
+  finishRoll: (logId: string) => Promise<void>;
 }
 
 const FilmContext = createContext<FilmContextType | undefined>(undefined);
 
 export function FilmProvider({ children }: { children: ReactNode }) {
-  const [rolls, setRolls] = useState<FilmRoll[]>(INITIAL_ROLLS);
-  const [logs, setLogs] = useState<FilmLog[]>([]);
+  const queryClient = useQueryClient();
 
-  const addRoll = (roll: Omit<FilmRoll, "id">) => {
-    const newRoll = { ...roll, id: uuidv4() };
-    setRolls((prev) => [...prev, newRoll]);
+  // Fetch film rolls
+  const { data: rolls = [], isLoading: isLoadingRolls } = useQuery({
+    queryKey: ["filmRolls"],
+    queryFn: filmRollsAPI.getAll,
+  });
+
+  // Fetch film logs
+  const { data: logs = [], isLoading: isLoadingLogs } = useQuery({
+    queryKey: ["filmLogs"],
+    queryFn: filmLogsAPI.getAll,
+  });
+
+  // Mutations
+  const addRollMutation = useMutation({
+    mutationFn: filmRollsAPI.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["filmRolls"] });
+    },
+  });
+
+  const updateRollMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<FilmRoll> }) =>
+      filmRollsAPI.update(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["filmRolls"] });
+    },
+  });
+
+  const deleteRollMutation = useMutation({
+    mutationFn: filmRollsAPI.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["filmRolls"] });
+    },
+  });
+
+  const createLogMutation = useMutation({
+    mutationFn: filmLogsAPI.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["filmLogs"] });
+    },
+  });
+
+  const updateLogMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Omit<FilmLog, "id">> }) =>
+      filmLogsAPI.update(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["filmLogs"] });
+    },
+  });
+
+  // Context methods
+  const addRoll = async (roll: Omit<FilmRoll, "id">) => {
+    await addRollMutation.mutateAsync(roll);
   };
 
-  const updateRoll = (id: string, updates: Partial<FilmRoll>) => {
-    setRolls((prev) =>
-      prev.map((roll) => (roll.id === id ? { ...roll, ...updates } : roll))
-    );
+  const updateRoll = async (id: string, updates: Partial<FilmRoll>) => {
+    await updateRollMutation.mutateAsync({ id, updates });
   };
 
-  const deleteRoll = (id: string) => {
-    setRolls((prev) => prev.filter((roll) => roll.id !== id));
+  const deleteRoll = async (id: string) => {
+    await deleteRollMutation.mutateAsync(id);
   };
 
-  const useRoll = (id: string, camera?: string, notes?: string) => {
-    let rollDetails: FilmRoll | undefined;
-    
-    setRolls((prev) => 
-      prev.map((roll) => {
-        if (roll.id === id && roll.quantity > 0) {
-          rollDetails = roll;
-          return { ...roll, quantity: roll.quantity - 1 };
-        }
-        return roll;
-      })
-    );
+  const useRoll = async (id: string, camera?: string, notes?: string) => {
+    // Find the roll
+    const roll = rolls.find((r) => r.id === id);
+    if (!roll || roll.quantity <= 0) return;
 
-    if (rollDetails) {
-      const newLog: FilmLog = {
-        id: uuidv4(),
-        filmRollId: rollDetails.id,
-        filmName: rollDetails.name,
-        manufacturer: rollDetails.manufacturer,
-        film_size: rollDetails.film_size,
-        iso: rollDetails.iso_custom || rollDetails.iso_recommended,
-        dateLoaded: new Date().toISOString(),
-        dateFinished: null,
-        camera: camera || null,
-        notes: notes || null,
-      };
-      setLogs((prev) => [newLog, ...prev]);
-    }
+    // Update roll quantity
+    await updateRollMutation.mutateAsync({
+      id,
+      updates: { quantity: roll.quantity - 1 },
+    });
+
+    // Create log entry
+    await createLogMutation.mutateAsync({
+      filmRollId: roll.id,
+      filmName: roll.name,
+      manufacturer: roll.manufacturer,
+      film_size: roll.film_size,
+      iso: roll.iso_custom || roll.iso_recommended,
+      dateFinished: null,
+      camera: camera || null,
+      notes: notes || null,
+    });
   };
 
-  const finishRoll = (logId: string) => {
-    setLogs((prev) => 
-      prev.map(log => 
-        log.id === logId 
-          ? { ...log, dateFinished: new Date().toISOString() } 
-          : log
-      )
-    );
+  const finishRoll = async (logId: string) => {
+    await updateLogMutation.mutateAsync({
+      id: logId,
+      updates: { dateFinished: new Date().toISOString() },
+    });
   };
 
   return (
@@ -79,6 +119,8 @@ export function FilmProvider({ children }: { children: ReactNode }) {
       value={{
         rolls,
         logs,
+        isLoadingRolls,
+        isLoadingLogs,
         addRoll,
         updateRoll,
         deleteRoll,
