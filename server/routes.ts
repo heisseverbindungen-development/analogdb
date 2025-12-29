@@ -92,7 +92,16 @@ export async function registerRoutes(
 
   app.patch("/api/film-logs/:id", async (req, res) => {
     try {
-      const log = await storage.updateFilmLog(req.params.id, req.body);
+      // Convert ISO string dates to Date objects for timestamp fields
+      const updates = { ...req.body };
+      if (updates.dateFinished) {
+        updates.dateFinished = new Date(updates.dateFinished);
+      }
+      if (updates.dateLoaded) {
+        updates.dateLoaded = new Date(updates.dateLoaded);
+      }
+      
+      const log = await storage.updateFilmLog(req.params.id, updates);
       if (!log) {
         return res.status(404).json({ error: "Film log not found" });
       }
