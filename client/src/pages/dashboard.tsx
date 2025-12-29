@@ -1,34 +1,15 @@
 import Layout from "@/components/Layout";
 import FilmRollCard from "@/components/FilmRollCard";
 import { useFilm } from "@/lib/film-context";
-import { Film, AlertTriangle, Layers, Search, Camera, History, CheckCircle2, Clock } from "lucide-react";
-import { isPast, parseISO, formatDistanceToNow } from "date-fns";
+import { Film, AlertTriangle, Layers, Camera, CheckCircle2 } from "lucide-react";
+import { isPast, parseISO } from "date-fns";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState } from "react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import UseRollDialog from "@/components/UseRollDialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Dashboard() {
-  const { rolls, logs, useRoll, finishRoll } = useFilm();
-  const [openCombobox, setOpenCombobox] = useState(false);
-  const [selectedRollForUse, setSelectedRollForUse] = useState<{id: string, name: string} | null>(null);
+  const { rolls, logs } = useFilm();
 
   // Stats
   const totalRolls = rolls.reduce((acc, roll) => acc + roll.quantity, 0);
@@ -37,7 +18,9 @@ export default function Dashboard() {
   
   // Active Rolls (In Camera)
   const activeRolls = logs.filter(log => log.dateFinished === null);
-  const finishedRolls = logs.filter(log => log.dateFinished !== null);
+
+  // Recent rolls (just last 5 added for now)
+  const recentRolls = [...rolls].reverse().slice(0, 5);
 
   // Chart Data
   const rollsByManufacturer = rolls.reduce((acc, roll) => {
@@ -63,30 +46,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleQuickUseSelect = (id: string, name: string) => {
-    setSelectedRollForUse({ id, name });
-    setOpenCombobox(false);
-  };
-
-  const handleQuickUseConfirm = (camera: string, notes: string) => {
-    if (selectedRollForUse) {
-      useRoll(selectedRollForUse.id, camera, notes);
-      toast.success(`Loaded ${selectedRollForUse.name}`, {
-        description: camera ? `Into ${camera}` : "Marked as in use",
-        icon: <Camera className="w-4 h-4 text-primary" />,
-      });
-      setSelectedRollForUse(null);
-    }
-  };
-
-  const handleFinishRoll = (logId: string, filmName: string) => {
-    finishRoll(logId);
-    toast.success(`Finished ${filmName}`, {
-      description: "Moved to history log.",
-      icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
-    });
-  };
-
   return (
     <Layout>
       <div className="p-8 space-y-10 max-w-7xl mx-auto">
@@ -97,73 +56,6 @@ export default function Dashboard() {
              <div>
                <h2 className="text-3xl font-heading font-bold text-foreground">Dashboard</h2>
                <p className="text-muted-foreground mt-1">Overview of your analog archives.</p>
-             </div>
-             
-             {/* Quick Actions */}
-             <div className="flex flex-col items-end gap-2">
-                <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                  <PopoverTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      role="combobox" 
-                      aria-expanded={openCombobox}
-                      className="w-[280px] justify-between text-muted-foreground hover:text-foreground border-dashed border-2 hover:border-primary/50"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Camera className="w-4 h-4" />
-                        Quick Load Camera...
-                      </span>
-                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[280px] p-0" align="end">
-                    <Command>
-                      <CommandInput placeholder="Search inventory..." />
-                      <CommandList>
-                        <CommandEmpty>No film found.</CommandEmpty>
-                        <CommandGroup heading="Available Stock">
-                          {rolls
-                            .filter(r => r.quantity > 0)
-                            .map((roll) => (
-                              <CommandItem
-                                key={roll.id}
-                                onSelect={() => handleQuickUseSelect(roll.id, roll.name)}
-                                className="cursor-pointer"
-                              >
-                                <div className="flex items-center justify-between w-full">
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">{roll.name}</span>
-                                    <span className="text-[10px] text-muted-foreground uppercase">{roll.manufacturer} • {roll.film_size}</span>
-                                  </div>
-                                  <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">x{roll.quantity}</span>
-                                </div>
-                              </CommandItem>
-                          ))}
-                        </CommandGroup>
-                        {rolls.filter(r => r.quantity === 0).length > 0 && (
-                           <>
-                            <CommandSeparator />
-                            <CommandGroup heading="Out of Stock">
-                               {rolls
-                                .filter(r => r.quantity === 0)
-                                .map((roll) => (
-                                  <CommandItem key={roll.id} disabled className="opacity-50">
-                                     <div className="flex items-center justify-between w-full">
-                                      <div className="flex flex-col">
-                                        <span className="font-medium">{roll.name}</span>
-                                        <span className="text-[10px] text-muted-foreground uppercase">{roll.manufacturer} • {roll.film_size}</span>
-                                      </div>
-                                      <span className="text-xs font-mono bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">x0</span>
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                            </CommandGroup>
-                           </>
-                        )}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
              </div>
           </div>
           
@@ -188,15 +80,17 @@ export default function Dashboard() {
                  </div>
                </div>
                
-               <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px] flex-1">
-                 <div className="p-2 bg-blue-500/10 rounded-md text-blue-500">
-                   <Camera className="w-5 h-5" />
+               <Link href="/cameras">
+                 <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px] flex-1 cursor-pointer hover:border-primary/50 transition-colors group">
+                   <div className="p-2 bg-blue-500/10 rounded-md text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                     <Camera className="w-5 h-5" />
+                   </div>
+                   <div>
+                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider group-hover:text-blue-500 transition-colors">Cameras Loaded</p>
+                     <p className="text-2xl font-mono font-bold">{activeRolls.length}</p>
+                   </div>
                  </div>
-                 <div>
-                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Loaded</p>
-                   <p className="text-2xl font-mono font-bold">{activeRolls.length}</p>
-                 </div>
-               </div>
+               </Link>
 
                <div className="bg-card border border-border px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm min-w-[140px] flex-1">
                  <div className="p-2 bg-destructive/10 rounded-md text-destructive">
@@ -209,51 +103,6 @@ export default function Dashboard() {
                </div>
              </div>
         </section>
-
-        {/* Currently Loaded */}
-        {activeRolls.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-heading font-semibold flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-blue-500 rounded-full inline-block"></span>
-                Currently Loaded
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeRolls.map(log => (
-                <Card key={log.id} className="border-l-4 border-l-blue-500">
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{log.manufacturer}</p>
-                        <h4 className="font-heading font-semibold text-lg">{log.filmName}</h4>
-                      </div>
-                      <Badge variant="outline" className="font-mono text-xs">{log.film_size}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-2">
-                    <div className="flex items-center gap-2 text-sm mb-2">
-                       <Camera className="w-4 h-4 text-primary" />
-                       <span className="font-medium">{log.camera || "Unknown Camera"}</span>
-                    </div>
-                    {log.notes && (
-                      <p className="text-xs text-muted-foreground italic mb-3">"{log.notes}"</p>
-                    )}
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                         <Clock className="w-3 h-3" />
-                         {formatDistanceToNow(parseISO(log.dateLoaded), { addSuffix: true })}
-                      </span>
-                      <Button size="sm" variant="outline" onClick={() => handleFinishRoll(log.id, log.filmName)}>
-                        Finish Roll
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
            {/* Chart */}
@@ -293,37 +142,45 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* History Log */}
+          {/* Recent Additions */}
           <section className="lg:col-span-1">
-             <div className="mb-4">
+             <div className="mb-4 flex items-center justify-between">
                <h3 className="text-xl font-heading font-semibold flex items-center gap-2">
-                 <History className="w-5 h-5 text-muted-foreground" />
-                 History
+                 <CheckCircle2 className="w-5 h-5 text-muted-foreground" />
+                 Recently Added
                </h3>
+               <Link href="/inventory">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs">
+                    View All
+                  </Button>
+               </Link>
              </div>
              <Card className="h-[380px]">
                <ScrollArea className="h-full">
                  <div className="p-4 space-y-4">
-                   {finishedRolls.length === 0 ? (
-                     <p className="text-center text-muted-foreground text-sm py-8">No history yet.</p>
-                   ) : (
-                     finishedRolls.map(log => (
-                       <div key={log.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                         <div className="flex justify-between items-start mb-1">
-                           <p className="font-medium text-sm">{log.filmName}</p>
-                           <span className="text-[10px] text-muted-foreground">
-                             {log.dateFinished && formatDistanceToNow(parseISO(log.dateFinished), { addSuffix: true })}
-                           </span>
-                         </div>
-                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                           <Camera className="w-3 h-3" />
-                           <span>{log.camera || "Unknown"}</span>
-                           <span>•</span>
-                           <span>ISO {log.iso}</span>
+                     {recentRolls.map(roll => (
+                       <div key={roll.id} className="border-b border-border pb-3 last:border-0 last:pb-0 flex gap-3">
+                         {roll.image_url ? (
+                           <div className="w-10 h-10 rounded bg-muted flex-shrink-0 overflow-hidden">
+                             <img src={roll.image_url} className="w-full h-full object-cover opacity-80" />
+                           </div>
+                         ) : (
+                            <div className="w-10 h-10 rounded bg-muted flex-shrink-0 flex items-center justify-center text-xs font-mono font-bold text-muted-foreground">
+                              {roll.quantity}x
+                            </div>
+                         )}
+                         <div>
+                           <p className="font-medium text-sm">{roll.name}</p>
+                           <div className="flex gap-2 text-[10px] text-muted-foreground mt-0.5">
+                             <span>{roll.manufacturer}</span>
+                             <span>•</span>
+                             <span>{roll.film_size}</span>
+                             <span>•</span>
+                             <span>ISO {roll.iso_recommended}</span>
+                           </div>
                          </div>
                        </div>
-                     ))
-                   )}
+                     ))}
                  </div>
                </ScrollArea>
              </Card>
@@ -331,13 +188,6 @@ export default function Dashboard() {
         </div>
 
       </div>
-
-      <UseRollDialog 
-        open={!!selectedRollForUse} 
-        onOpenChange={(open) => !open && setSelectedRollForUse(null)} 
-        onConfirm={handleQuickUseConfirm}
-        filmName={selectedRollForUse?.name || ""}
-      />
     </Layout>
   );
 }

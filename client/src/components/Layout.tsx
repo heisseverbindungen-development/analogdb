@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Film, Home } from "lucide-react";
+import { Film, Home, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -8,6 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/inventory", label: "Inventory", icon: Film },
+    { href: "/cameras", label: "Logbook", icon: Camera },
   ];
 
   return (
