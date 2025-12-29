@@ -1,6 +1,6 @@
 import { FilmRoll } from "@/shared/types";
 import { format, parseISO, isPast } from "date-fns";
-import { Calendar, Droplets, Hash, AlertTriangle, Edit2, Trash2 } from "lucide-react";
+import { Calendar, Droplets, Hash, AlertTriangle, Edit2, Trash2, Camera } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ interface FilmRollCardProps {
 }
 
 export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
-  const { deleteRoll } = useFilm();
+  const { deleteRoll, useRoll } = useFilm();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isExpired = roll.expiry_date ? isPast(parseISO(roll.expiry_date)) : false;
@@ -24,6 +24,11 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
     if (confirm("Are you sure you want to delete this roll?")) {
       deleteRoll(roll.id);
     }
+  };
+
+  const handleUse = () => {
+    if (roll.quantity <= 0) return;
+    useRoll(roll.id);
   };
 
   const getManufacturerColor = (m: string) => {
@@ -59,7 +64,7 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
           </Badge>
         </div>
         <div className="absolute bottom-2 right-2">
-            <Badge className="bg-primary text-primary-foreground font-mono font-bold">
+            <Badge className={cn("font-mono font-bold transition-colors", roll.quantity > 0 ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground")}>
                x{roll.quantity}
             </Badge>
         </div>
@@ -116,6 +121,25 @@ export default function FilmRollCard({ roll, onEdit }: FilmRollCardProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-2 border-t border-border/50 flex justify-end gap-2 bg-muted/20">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 mr-auto"
+                onClick={handleUse}
+                disabled={roll.quantity <= 0}
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Load into Camera (Use 1)</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <Button 
           variant="ghost" 
           size="icon" 
