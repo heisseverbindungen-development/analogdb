@@ -7,7 +7,7 @@ A web application for managing your analog film inventory. Track your film stock
 - **Dashboard**: Overview of your film inventory with statistics and charts
 - **Film Inventory**: Manage your film stock with detailed information (manufacturer, type, ISO, expiry date)
 - **Film Logbook**: Track which films are loaded in cameras and their usage history
-- **Image Uploads**: Add custom images to your film rolls
+- **Image Uploads**: Add custom images to your film rolls (auto-compressed to 300x300 WebP thumbnails)
 - **Mobile Responsive**: Works on desktop and mobile devices
 
 ## Tech Stack
@@ -15,6 +15,7 @@ A web application for managing your analog film inventory. Track your film stock
 - **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend**: Node.js, Express
 - **Database**: PostgreSQL with Drizzle ORM
+- **Image Processing**: Sharp (automatic thumbnail compression)
 - **Build Tool**: Vite
 
 ---
@@ -60,6 +61,42 @@ A web application for managing your analog film inventory. Track your film stock
    ```
 
 6. **Access the application** at `http://your-server-ip:5000`
+
+---
+
+## Image Upload System
+
+The application includes a local image upload system optimized for storage efficiency:
+
+### How It Works
+
+1. **Upload**: When you add an image to a film roll, it's uploaded via `POST /api/local-uploads`
+2. **Processing**: The image is automatically:
+   - Resized to 300x300 pixels (thumbnail size)
+   - Converted to WebP format (30-50% smaller than JPEG)
+   - Saved with a unique UUID filename
+3. **Storage**: Images are stored in the `uploads/` directory
+4. **Serving**: Images are served via `GET /local-uploads/:filename` with 1-year cache headers
+
+### Storage Persistence
+
+In Docker, uploaded images are persisted using a named volume:
+```yaml
+volumes:
+  - uploads_data:/app/uploads
+```
+
+This ensures images survive container restarts and updates.
+
+### Backup Images
+
+```bash
+# Copy uploads from container to host
+docker cp analogfilmdb-app:/app/uploads ./uploads-backup
+
+# Restore uploads to container
+docker cp ./uploads-backup/. analogfilmdb-app:/app/uploads/
+```
 
 ---
 
