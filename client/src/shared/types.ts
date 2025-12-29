@@ -15,3 +15,16 @@ export interface FilmRoll {
   image_url: string | null;
   quantity: number;
 }
+
+export interface FilmLog {
+  id: string;
+  filmRollId: string;
+  filmName: string;
+  manufacturer: string;
+  film_size: FilmSize;
+  iso: number;
+  dateLoaded: string; // ISO string
+  dateFinished: string | null; // ISO string or null if currently in use
+  camera: string | null;
+  notes: string | null;
+}
