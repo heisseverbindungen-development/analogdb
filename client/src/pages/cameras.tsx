@@ -34,9 +34,9 @@ export default function Cameras() {
     setOpenCombobox(false);
   };
 
-  const handleQuickUseConfirm = (camera: string, notes: string) => {
+  const handleQuickUseConfirm = async (camera: string, notes: string) => {
     if (selectedRollForUse) {
-      useRoll(selectedRollForUse.id, camera, notes);
+      await useRoll(selectedRollForUse.id, camera, notes);
       toast.success(`Loaded ${selectedRollForUse.name}`, {
         description: camera ? `Into ${camera}` : "Marked as in use",
         icon: <Camera className="w-4 h-4 text-primary" />,
@@ -45,8 +45,8 @@ export default function Cameras() {
     }
   };
 
-  const handleFinishRoll = (logId: string, filmName: string) => {
-    finishRoll(logId);
+  const handleFinishRoll = async (logId: string, filmName: string) => {
+    await finishRoll(logId);
     toast.success(`Finished ${filmName}`, {
       description: "Moved to history log.",
       icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,

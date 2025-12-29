@@ -33,9 +33,9 @@ export default function Dashboard() {
     setOpenCombobox(false);
   };
 
-  const handleQuickUseConfirm = (camera: string, notes: string) => {
+  const handleQuickUseConfirm = async (camera: string, notes: string) => {
     if (selectedRollForUse) {
-      useRoll(selectedRollForUse.id, camera, notes);
+      await useRoll(selectedRollForUse.id, camera, notes);
       toast.success(`Loaded ${selectedRollForUse.name}`, {
         description: camera ? `Into ${camera}` : "Marked as in use",
         icon: <Camera className="w-4 h-4 text-primary" />,
