@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -172,7 +173,7 @@ export default function FilmForm({ open, onOpenChange, onSubmit, initialData }: 
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mt-6">
             
             <div className="space-y-2">
-              <FormLabel>Film Image</FormLabel>
+              <Label>Film Image</Label>
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border bg-muted">
                   <img 
